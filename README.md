@@ -196,6 +196,113 @@ kubectl get pods
 kubectl get ds
 ```
 
+# Send AWS EKS Metrics to Prometheus using ADOT Collector
+**Introduction**
+- Send AWS EKS Metrics to AWS Managed Prometheus using ADOT Collector
+- Integrate AWS Managed Grafana with AWS Managed Prometheus to viewing the Metrics
+
+  **Flow**
+  ```bash
+  AWS EKS Metrics → ADOT Collector → AWS Managed Prometheus -> AWS Managed Grafana
+
+  ```
+
+  > ⚠️ Prerequisite Make sure AWS data plane is up and running.
+  - [aws_resources](aws_resources)
+
+  # ADOT Metrics Collector - Architectural Flow
+    ![alt](https://github.com/nawaz-ch/ADOT-AMP-AMG/blob/0620796e3188594e725e36252634199fd6a0eb54/20_04_01_OpenTelemetry_Metrics_AMP_AMG.png)
+
+  # ADOT Metrics Collector - YAML File
+    ![alt](https://github.com/nawaz-ch/ADOT-AMP-AMG/blob/0620796e3188594e725e36252634199fd6a0eb54/20_04_02_OpenTelemetry_Metrics_AMP_AMG.png)
+
+  # Review Metrics ADOT Collector
+  - [01_adot_collector_prometheus_full_k8s_cluster.yaml](OpenTelemetry_Traces/01_OpenTelemetry_AMP_AMG/01_adot_collector_prometheus_full_k8s_cluster.yaml)
+
+
+# Update Prometheus Endpoint
+- Go to Amazon Prometheus -> Workspaces -> retail-dev-eksdemo1-amp
+- Get the `https://aps-workspaces.us-east-1.amazonaws.com/workspaces/ws-17f701c7-cbec-4115-a25e-1c74e34ced66/api/v1/remote_write`
+- Update in `01_adot_collector_prometheus_full_k8s_cluster.yaml`
+
+```bash
+    # ====================
+    # EXPORTERS
+    # ====================
+    exporters:
+      prometheusremotewrite:
+        endpoint: "https://aps-workspaces.us-east-1.amazonaws.com/workspaces/ws-17f701c7-cbec-4115-a25e-1c74e34ced66/api/v1/remote_write"
+        auth:
+          authenticator: sigv4auth
+```
+
+#  Deploy Logs ADOT Metrics Collector
+```bash
+
+# Deploy Metrics ADOT Collector and Review Logs
+kubectl apply -f 01_OpenTelemetry_Metrics/01_adot_collector_prometheus_full_k8s_cluster.yaml
+
+# Verify ADOT Collector and Daemonset
+kubectl get opentelemetrycollector
+kubectl get deploy
+kubectl describe deploy adot-metrics-prometheus-collector 
+kubectl get pods
+
+# Verify if this collector is part of ADOT Operator installed via EKS Addon
+kubectl describe deploy adot-metrics-prometheus-collector  | grep operator
+
+
+# Review Metrics ADOT Collector Logs
+kubectl get pods
+kubectl logs -f <POD-NAME>
+or 
+kubectl logs -f -l  app.kubernetes.io/name=adot-metrics-prometheus-collector 
+
+```
+
+# Vefify AMP Connectivity
+```bash
+# Update AMP Workspace ID in "verify_amp_metrics.sh
+AMP_WORKSPACE_ID="ws-17f701c7-cbec-4115-a25e-1c74e34ced66"
+
+# Verify AMP Connectivity
+./verify_amp_metrics.sh
+
+```
+
+# AMG - COST ALERT
+- When we add a user in Identity Center and Associate that user with Grafana it costs $9 per user.
+
+# Verify - Amazon Managed Grafana (AMG)
+- This is created as part of 05_OPENTELEMTRY_terraform-manifests
+- Go to AWS Managed Grafana -> Workspaces -> retail-dev-eksdemo1-amg
+
+# Create User in Identity Service
+- Go to AWS IAM Identity Center -> Create User -> Two factor Authentication
+
+# Amazon Managed Grafana - Associate User
+- Go to AMG -> Workspaces -> retail-dev-eksdemo1-amg
+- Authentication -> Assign new user or Group
+
+# Login to AMG and Add prometheus Endpoint
+- Login to AMG using AWS IAM Identity Center User
+- Add AWS Prometheus as Datasource
+
+# Import Kubernetes Dashboard to Amazon Managed Grafana
+- In Grafana -> Go to Dashboards → Import
+- Use dashboard ID: 15661 (Kubernetes cluster monitoring)
+
+# Review Metrics in AMG
+- Go to Grafana Dashboards
+
+# Clean-Up - Metrics ADOT Collector
+
+```bash
+# Delete Metrics ADOT Collector and Review Logs
+kubectl delete -f 01_OpenTelemetry_Metrics/01_adot_collector_prometheus_full_k8s_cluster.yaml
+```
+  
+
   
 
 
