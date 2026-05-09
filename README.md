@@ -54,6 +54,11 @@ Retail Apps → ADOT Collector → AWS X-Ray → CloudWatch Application Signals
 
 # Review 01_adot_collector_traces.yaml
 - This defines how traces are received, processed, filtered, and exported to AWS X-Ray using ADOT.
+ - [adot_collector_traces.yaml](OpenTelemetry_Traces/01_OpenTelemetry_Traces/01_adot_collector_traces.yaml)
+
+# Review 02_adot_instrumentation_traces.yaml
+- This defines how application pods get OTEL SDK configuration without changing application code.
+- [adot_instrumentation_traces.yaml](OpenTelemetry_Traces/01_OpenTelemetry_Traces/01_adot_instrumentation_traces.yaml)
 
 **Important:**
 - We are NOT using auto-instrumentation agents (Java agent, Node agent, etc.)
@@ -132,6 +137,65 @@ kubectl delete -f 01_OpenTelemetry_Traces/01_adot_collector_traces.yaml
   ```
 
   **Open Telemetry Logs - Architectural Flow**
+  ![alt](https://github.com/nawaz-ch/ADOT-AMP-AMG/blob/0620796e3188594e725e36252634199fd6a0eb54/20_03_01_OpenTelemetry_Logs.png)
+
+  **Open Telemetry Collector - Components**
+  ![alt](https://github.com/nawaz-ch/ADOT-AMP-AMG/blob/0620796e3188594e725e36252634199fd6a0eb54/20_03_02_OpenTelemetry_Logs.png)
+
+  **Review Logs ADOT Collector**
+  - [ADOT Logs Collector](OpenTelemetry_Logs/01_OpenTelemetry_Logs/01_adot_collector_logs.yaml)
+ 
+  # Deploy Logs ADOT Collector
+```bash
+kubectl apply -f 01_OpenTelemetry_Logs/01_adot_collector_logs.yaml
+
+# Verify ADOT Collector and Daemonset
+kubectl get opentelemetrycollector
+kubectl get ds
+kubectl describe ds adot-logs-collector
+kubectl get pods
+# Verify if this collector is part of ADOT Operator installed via EKS Addon
+kubectl describe ds adot-logs-collector | grep operator
+# Restart Retail Apps
+./restart-retailapp.sh
+
+# Review ADOT Collector Logs
+kubectl get pods
+kubectl logs -f <POD-NAME>
+or 
+kubectl logs -f -l  app.kubernetes.io/name=adot-logs-collector --max-log-requests 10
+
+```
+**Verify Logs in CloudWatch**
+- Go to AWS CloudWatch -> Logs -> Log Management
+
+# Run Queries in Log Insights
+- Go to AWS CloudWatch -> Logs -> Log Insights
+```bash
+# Query-1: Show All Logs (Latest First)
+fields @timestamp, @log, @message
+| sort @timestamp desc
+
+# Query-2: Checkout HTTP requests only
+fields @timestamp, @log, @message
+| filter @message like /checkout/ and @message like /GET|POST|PUT|DELETE/
+| sort @timestamp desc
+
+# Query-3: Catalog HTTP requests only
+fields @timestamp, @log, @message
+| filter @message like /catalog/ and @message like /GET|POST|PUT|DELETE/
+| sort @timestamp desc
+```
+# Clean-up
+```bash
+# Deploy Logs ADOT Collector and Review Logs
+kubectl delete -f 01_OpenTelemetry_Logs/01_adot_collector_logs.yaml
+
+# Verify 
+kubectl get pods
+kubectl get ds
+```
+
   
 
 
