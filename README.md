@@ -120,6 +120,18 @@ kubectl delete -f 01_OpenTelemetry_Traces/02_adot_instrumentation_traces.yaml
 # Delete Traces Collector
 kubectl delete -f 01_OpenTelemetry_Traces/01_adot_collector_traces.yaml
 ```
+# Send Retail Store Application Logging on EKS using AWS ADOT (OpenTelemetry) to AWS CloudWatch Logs
+---
+**Introduction**
+- Send Retail Store Applications logs using OpenTelemetry ADOT Collector to AWS CloudWatch Logs
+- Logs are sent to AWS CloudWatch via ADOT Collector
+- View Logs in AWS CloudWatch Log Management
+**Flow**
+  ```bash
+  Retail Apps → ADOT Collector → AWS Cloud Watch Logs
+  ```
 
+  **Open Telemetry Logs - Architectural Flow**
+  
 
 
