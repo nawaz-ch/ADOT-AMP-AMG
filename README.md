@@ -43,7 +43,17 @@ Retail Apps → ADOT Collector → AWS X-Ray → CloudWatch Application Signals
 ```
 
 # ADOT Collector Traces Architecture
-![alt]()
+![alt](https://github.com/nawaz-ch/ADOT-AMP-AMG/blob/6f773c4c7f784b50f802f2a514426a77d79af5b4/20_02_01_ADOT_OpenTelemetry_Traces.png)
+
+
+# ADOT Collector YAML Structure
+![alt](https://github.com/nawaz-ch/ADOT-AMP-AMG/blob/6f773c4c7f784b50f802f2a514426a77d79af5b4/20_04_02_OpenTelemetry_Metrics_AMP_AMG.png)
+
+
+> ⚠️ Note: Make sure EKS cluster and retail application store are up and running .Also run OPENTELEMETRY_terraform-mainfests.
+
+# Review 01_adot_collector_traces.yaml
+- This defines how traces are received, processed, filtered, and exported to AWS X-Ray using ADOT.
 
 
 
