@@ -55,5 +55,71 @@ Retail Apps → ADOT Collector → AWS X-Ray → CloudWatch Application Signals
 # Review 01_adot_collector_traces.yaml
 - This defines how traces are received, processed, filtered, and exported to AWS X-Ray using ADOT.
 
+**Important:**
+- We are NOT using auto-instrumentation agents (Java agent, Node agent, etc.)
+- We are ONLY injecting OTEL SDK runtime configuration
+- Application code already contains manual instrumentation
+
+# Deploy Traces ADOT Collector and Instrumentation
+```bash
+# Change Directory 
+cd OpenTelemetry_Traces
+
+# Deploy ADOT Collector and Review Logs
+kubectl apply -f 01_OpenTelemetry_Traces/01_adot_collector_traces.yaml
+
+# Verify ADOT Collector and Deployment
+kubectl get opentelemetrycollector
+kubectl get deploy
+kubectl describe deployment adot-traces
+
+# Verify if this collector is part of ADOT Operator installed via EKS Addon
+kubectl describe deployment adot-traces | grep operator
+
+# Review ADOT Collector Logs
+kubectl get pods
+kubectl logs -f <POD-NAME>
+or 
+kubectl logs -f -l  app.kubernetes.io/name=adot-traces-collector
+
+# Deploy ADOT Instrumentation 
+kubectl apply -f 01_OpenTelemetry_Traces/02_adot_instrumentation_traces.yaml
+
+# Verify ADOT Instrumentation
+kubectl get instrumentation
+```
+
+**Restart all your microservices.**
+
+**Verify Instrumentation Injection**
+```bash
+# Verify ADOT Collector Logs
+kubectl logs -f -l app.kubernetes.io/name=adot-traces-collector
+
+# Verify Retail App Logs
+kubectl logs -f -l app.kubernetes.io/name=catalog
+kubectl logs -f -l app.kubernetes.io/name=carts
+kubectl logs -f -l app.kubernetes.io/name=checkout
+kubectl logs -f -l app.kubernetes.io/name=orders
+kubectl logs -f -l app.kubernetes.io/name=ui
+
+```
+
+# Review the CloudWatch Traces
+- Go to AWS Cloud Watch* -> Application Signals -> Traces What you'll see:
+- Complete end-to-end request flow (UI → Carts → Checkout → Orders)
+- Database queries with sanitized SQL
+- HTTP calls with status codes and latencies
+- Kubernetes metadata (pod name, namespace, deployment, node)
+
+# Clean-Up
+```bash
+# Delete Instrumentation
+kubectl delete -f 01_OpenTelemetry_Traces/02_adot_instrumentation_traces.yaml
+
+# Delete Traces Collector
+kubectl delete -f 01_OpenTelemetry_Traces/01_adot_collector_traces.yaml
+```
+
 
 
